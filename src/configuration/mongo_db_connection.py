@@ -8,6 +8,16 @@ from src.constant.database import DATABASE_NAME
 from src.constant.env_variable import MONGODB_URL_KEY
 
 from src.exception import SpamhamException
+from pathlib import Path
+from dotenv import load_dotenv
+import os
+
+# ✅ Load .env using absolute path
+env_path = Path(__file__).resolve().parents[2] / '.env'
+load_dotenv(dotenv_path=env_path)
+# print("Loaded MongoDB URL:", os.getenv(MONGODB_URL_KEY))
+
+# mongo_db_url = os.getenv("MONGO_DB_URL")
 
 
 ca = certifi.where()

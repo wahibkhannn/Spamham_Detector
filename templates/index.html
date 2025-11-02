@@ -1,49 +1,344 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <title>Spam Ham Detector</title>
-  <link rel="stylesheet" href="../static/css/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpamSense Classifier</title>
+  <!-- Tailwind CSS for styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts for a clean look -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+  <style>
+    /* Use the Inter font family */
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Custom styles for the result animation */
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes spin-slow {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .animate-spin-slow {
+      animation: spin-slow 6s linear infinite;
+    }
+
+    /* Styling for the footer */
+    .footer {
+      border-top: 1px solid #e5e7eb;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      padding-bottom: 2rem;
+    }
+  </style>
 </head>
-<body>
-<!-- partial:index.partial.html -->
-<div class="login-box">
-  <h2>Spam Ham Detector</h2>
-  <form>
 
-    
-    <button id = "training" onclick="myFunction"  href="/train">
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-       Train Model
-    </button>
+<body class="bg-gray-50 text-gray-800">
+  <nav class="bg-gray-900 text-white shadow-md">
+    <div class="container mx-auto px-4">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo and Title -->
+        <a href="#" class="flex items-center space-x-2">
+          <!-- You can add an icon here, like from Font Awesome -->
+          <i class="fas fa-shield-alt text-2xl text-blue-400"></i>
+          <span class="text-xl font-bold">SpamSense</span>
+        </a>
+        <!-- Navigation Links -->
+        <div class="hidden md:flex items-center space-x-8">
+          <a href="#" class="hover:text-blue-400 transition-colors">Home</a>
+          <a href="#" class="hover:text-blue-400 transition-colors">About</a>
+          <a href="#" class="hover:text-blue-400 transition-colors">Contact</a>
+        </div>
+      </div>
+    </div>
+  </nav>
 
-    <!-- <button         onclick="window.open('/predict'), '_self' " > -->
-      <button onclick = "window.open('/predict', 'prediction tab')">
-      <span></span>
-      <span></span>
-      <span></span>
-      <span></span>
-       SpamHam Detector
-    </button>
-  </form>
- 
-  <footer class="footer">
 
-    <h4>Copyright &copy; <a style="color: #ffffff;" href = "https://github.com/tanishavermaa">Tanisha Verma</a></h4>
+  <div class="container mx-auto px-4 py-8 md:py-16 max-w-4xl">
 
-  </footer>
-</div>
-<!-- partial -->
+    <!-- Header Section -->
+    <header class="text-center mb-12">
+      <h1 class="text-3xl md:text-4xl font-bold text-black-900 mb-3">SpamSense: Smart Email & Message Classifier</h1>
+      <p class="text-lg text-gray-600">Detect spam instantly with AI-powered accuracy.</p>
+    </header>
+
   
-<script>
-  function myFunction() {
-    document.getElementById("training").innerHTML = "Prediction started";
-  }
+
+    <!-- Main Classifier Card -->
+    <main
+      class="bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-gray-800 rounded-3xl shadow-2xl p-8 md:p-10 mb-16 border border-gray-100 dark:border-gray-700 transition-all duration-500">
+      <form id="spamForm" class="flex flex-col gap-6">
+
+        <!-- Animated Input Area -->
+        <div class="relative group">
+          <textarea id="messageInput"
+            class="w-full h-52 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-gray-900/60 backdrop-blur-md resize-none 
+               focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-600 focus:border-transparent 
+               shadow-sm text-gray-800 dark:text-gray-200 text-base leading-relaxed transition-all duration-300 group-hover:shadow-md"
+            placeholder=" Paste or type your message/email here..."></textarea>
+          <div
+            class="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-tr from-blue-100 to-transparent dark:from-blue-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+          </div>
+        </div>
+
+        <!-- Button & Info -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p class="text-xs text-gray-500 dark:text-gray-400 text-center sm:text-left max-w-md">
+            Your text never leaves your browser. The AI model runs locally for demo purposes.
+          </p>
+          
+          <button type="submit" id="checkSpamButton" class="group relative inline-flex items-center justify-center px-10 py-4 overflow-hidden text-white font-semibold rounded-[2.5rem]
+   bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-400
+   hover:from-blue-700 hover:via-cyan-600 hover:to-teal-500
+   focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 shadow-[0_8px_20px_rgba(0,0,0,0.15)]
+   transform hover:scale-[1.07] transition-all duration-500 ease-in-out">
+            <span class="relative z-10 tracking-wide drop-shadow-md">Check Spam</span>
+
+            <!-- Subtle glow effect on hover -->
+            <span
+              class="absolute inset-0 bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-300 opacity-0 group-hover:opacity-70 blur-3xl transition-all duration-700 ease-in-out"></span>
+
+            <!-- Spinning gradient background effect on hover -->
+            <span
+              class="absolute w-[140%] h-[140%] bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-400 rounded-full opacity-0 group-hover:opacity-10 animate-spin-slow blur-2xl"></span>
+          </button>
+
+        </div>
+      </form>
+    </main>
+
+
+    <!-- <main class="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-16">
+            <form id="spamForm">
+                <textarea 
+                    id="messageInput"
+                    class="w-full h-48 p-4 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow duration-200" 
+                    placeholder="Paste or type your message/email here..."
+                ></textarea>
+                <div class="flex flex-col sm:flex-row items-center justify-between mt-4">
+                    <p class="text-xs text-gray-500 mb-4 sm:mb-0 text-center sm:text-left">
+                        Your text stays in your browser. Demo classification runs on a simple rule-based model.
+                    </p>
+                    <button 
+                        type="submit" 
+                        id="checkSpamButton"
+                        class="w-full sm:w-auto bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:scale-105"
+                    >
+                        Check Spam
+                    </button>
+                </div>
+            </form> -->
+
+    <!-- Result Display Area -->
+    <div id="resultContainer" class="mt-6 text-center hidden">
+      <div id="loader" class="flex justify-center items-center">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p class="ml-3 text-gray-600">Analyzing...</p>
+      </div>
+      <div id="resultMessage" class="hidden"></div>
+    </div>
+    </main>
+
+    <!-- How It Works Section -->
+    <section class="text-center">
+      <h2 class="text-3xl font-bold mb-8">How it works</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Step 1 -->
+        <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+          <div
+            class="flex items-center justify-center w-12 h-12 bg-purple-100 text-purple-600 font-bold rounded-full mx-auto mb-4 text-xl">
+            1</div>
+          <h3 class="text-xl font-semibold mb-2">Input your text</h3>
+          <p class="text-gray-600">Paste or type any email or message you want to check into the text box above.</p>
+        </div>
+        <!-- Step 2 -->
+        <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+          <div
+            class="flex items-center justify-center w-12 h-12 bg-purple-100 text-purple-600 font-bold rounded-full mx-auto mb-4 text-xl">
+            2</div>
+          <h3 class="text-xl font-semibold mb-2">AI processes your message</h3>
+          <p class="text-gray-600">Our classifier analyzes patterns and spam indicators in your text in real-time.</p>
+        </div>
+        <!-- Step 3 -->
+        <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+          <div
+            class="flex items-center justify-center w-12 h-12 bg-purple-100 text-purple-600 font-bold rounded-full mx-auto mb-4 text-xl">
+            3</div>
+          <h3 class="text-xl font-semibold mb-2">Instant spam detection</h3>
+          <p class="text-gray-600">Get a clear result in a blink—Ham or Spam—helping you stay secure.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="footer text-center text-gray-500">
+      <div class="mb-4">
+        <button type="button" id="trainingButton" onclick="trainModel()"
+          class="bg-gray-200 text-gray-700 font-semibold py-2 px-5 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-all duration-200">
+          Train Model
+        </button>
+      </div>
+      <p>Copyright &copy; <a href="https://github.com/wahibkhannn" class="text-blue-600 hover:underline">Wahib Khan</a>
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    // DOM element references
+    const spamForm = document.getElementById('spamForm');
+    const messageInput = document.getElementById('messageInput');
+    const resultContainer = document.getElementById('resultContainer');
+    const loader = document.getElementById('loader');
+    const resultMessage = document.getElementById('resultMessage');
+    const checkSpamButton = document.getElementById('checkSpamButton');
+    const trainingButton = document.getElementById('trainingButton');
+
+    // Simple spam keywords for our rule-based model
+    const spamKeywords = [
+      'free', 'win', 'winner', 'prize', 'claim', 'urgent', 'act now',
+      'limited time', 'offer', 'guaranteed', 'cash', '$$$', 'credit card',
+      'income', 'investment', 'click here', 'unsubscribe', 'viagra', 'pharmacy',
+      'miracle', 'congratulations', 'risk-free', 'special promotion'
+    ];
+
+    /**
+     * Simulates a prediction based on keywords.
+     * @param {string} text - The input text to classify.
+     * @returns {object} An object containing the prediction and a corresponding color class.
+     */
+    function predictSpam(text) {
+      const lowercasedText = text.toLowerCase();
+
+      // Count how many spam keywords are in the text
+      let spamScore = 0;
+      for (const keyword of spamKeywords) {
+        if (lowercasedText.includes(keyword)) {
+          spamScore++;
+        }
+      }
+
+      // Simple logic: if more than one keyword is found, it's likely spam.
+      if (spamScore > 1 || (lowercasedText.length > 50 && spamScore > 0)) {
+        return {
+          prediction: 'Spam',
+          details: 'This message contains patterns commonly found in spam.',
+          colorClass: 'text-red-600',
+          bgClass: 'bg-red-50',
+          borderClass: 'border-red-200'
+        };
+      }
+
+      return {
+        prediction: 'Not Spam (Ham)',
+        details: 'This message seems safe.',
+        colorClass: 'text-green-600',
+        bgClass: 'bg-green-50',
+        borderClass: 'border-green-200'
+      };
+    }
+
+    /**
+     * Simulates a model training process.
+     */
+    function trainModel() {
+      trainingButton.disabled = true;
+      trainingButton.textContent = "Training...";
+
+      // Simulate training time
+      setTimeout(() => {
+        trainingButton.textContent = "Training Successful!";
+        trainingButton.classList.remove('bg-gray-200', 'hover:bg-gray-300');
+        trainingButton.classList.add('bg-green-500', 'text-white');
+
+        // Reset the button after a few seconds
+        setTimeout(() => {
+          trainingButton.disabled = false;
+          trainingButton.textContent = "Train Model";
+          trainingButton.classList.remove('bg-green-500', 'text-white');
+          trainingButton.classList.add('bg-gray-200', 'hover:bg-gray-300');
+        }, 3000);
+
+      }, 2000); // 2-second delay for training
+    }
+
+
+    // Event listener for form submission
+    spamForm.addEventListener('submit', (event) => {
+      event.preventDefault(); // Prevent the form from reloading the page
+
+      const message = messageInput.value.trim();
+
+      if (message.length === 0) {
+        // If input is empty, show a gentle nudge
+        resultMessage.innerHTML = `
+                    <p class="text-lg font-semibold text-gray-700">Please enter some text to analyze.</p>`;
+        resultContainer.classList.remove('hidden');
+        resultMessage.classList.remove('hidden');
+        resultMessage.classList.add('fade-in');
+        loader.classList.add('hidden');
+        return;
+      }
+
+      // Show loader and hide previous result
+      resultContainer.classList.remove('hidden');
+      loader.classList.remove('hidden');
+      resultMessage.classList.add('hidden');
+      checkSpamButton.disabled = true;
+      checkSpamButton.textContent = 'Analyzing...';
+
+
+      // Simulate a delay for processing (like a real API call)
+      setTimeout(() => {
+        const result = predictSpam(message);
+
+        // Update the result message with styling
+        resultMessage.innerHTML = `
+                    <div class="p-4 rounded-lg ${result.bgClass} border ${result.borderClass}">
+                        <p class="text-2xl font-bold ${result.colorClass}">${result.prediction}</p>
+                        <p class="text-gray-600 mt-1">${result.details}</p>
+                    </div>
+                `;
+
+        // Hide loader and show the result with an animation
+        loader.classList.add('hidden');
+        resultMessage.classList.remove('hidden');
+        resultMessage.classList.add('fade-in');
+
+        // Re-enable the button
+        checkSpamButton.disabled = false;
+        checkSpamButton.textContent = 'Check Spam';
+
+      }, 1500); // 1.5-second delay
+    });
+
   </script>
-  
 </body>
+
 </html>

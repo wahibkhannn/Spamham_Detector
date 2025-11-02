@@ -5,11 +5,12 @@ from fastapi.responses import Response
 from uvicorn import run as app_run
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-
+from src.constant.training_pipeline import FEATURE_COLUMN
 
 from src.pipeline.prediction_pipeline import PredictionPipeline
 from src.pipeline.train_pipeline import TrainPipeline
 from src.constant.application import *
+# from src.ml.preprocessing.text_preprocessor import TextPreprocessor  # or wherever your class is
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -85,18 +86,21 @@ async def predictGetRouteClient(request: Request):
 async def predictRouteClient(request: Request):
     try:
         form = DataForm(request)
-        
+        import pandas as pd
         await form.get_text_data()
-        
-        input_data = [form.text]
-        print(form.text)
+        input_data = pd.DataFrame({FEATURE_COLUMN: [form.text]})
+
+        # changes:
+        # input_data = [form.text]
+        # print(form.text)
+        print(f"Input text: {form.text}")
         
         # return Response(f"got data is : {input_data[0]}")
     
         
         prediction_pipeline = PredictionPipeline()
         prediction: int = prediction_pipeline.run_pipeline(input_data=input_data)
-        
+        print(f"🔥 Final Prediction from model: {prediction}")
         print(f"the prediction is : {prediction}")
        
         
@@ -111,4 +115,3 @@ async def predictRouteClient(request: Request):
 
 if __name__ == "__main__":
     app_run(app, host = APP_HOST, port =APP_PORT)
-    

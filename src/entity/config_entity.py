@@ -52,9 +52,9 @@ class DataValidationConfig:
 class DataTransformationConfig:
     data_transformation_dir: str = os.path.join(training_pipeline_config.artifact_dir, DATA_TRANSFORMATION_DIR_NAME)
     transformed_train_file_path: str = os.path.join(data_transformation_dir, DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR,
-                                                    TRAIN_FILE_NAME.replace("csv", "npy"))
+                                                    TRAIN_FILE_NAME.replace("csv", "pkl"))
     transformed_test_file_path: str = os.path.join(data_transformation_dir, DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR,
-                                                   TEST_FILE_NAME.replace("csv", "npy"))
+                                                   TEST_FILE_NAME.replace("csv", "pkl"))
     transformed_vectorizer_object_file_path: str = os.path.join(data_transformation_dir,
                                                      DATA_TRANSFORMATION_TRANSFORMED_OBJECT_DIR,
                                                      VECTORIZER_OBJECT_FILE_NAME)
@@ -85,15 +85,14 @@ class ModelPusherConfig:
     s3_model_key_path: str = MODEL_FILE_NAME
 
 
-
-
-
 @dataclass
 class PredictionPipelineConfig:
     data_bucket_name: str = prediction_pipeline.PREDICTION_DATA_BUCKET
     data_file_path: str = prediction_pipeline.PREDICTION_INPUT_FILE_NAME
-    model_file_name: str = MODEL_FILE_NAME
-    model_bucket_name: str = prediction_pipeline.MODEL_BUCKET_NAME
+    # model_file_name: str = MODEL_FILE_NAME
+    # model_bucket_name: str = prediction_pipeline.MODEL_BUCKET_NAME
+    model_bucket_name = "spam-detector-model1"
+    model_file_name = "best_model.pkl"
     output_file_name: str = prediction_pipeline.PREDICTION_OUTPUT_FILE_NAME
 
 

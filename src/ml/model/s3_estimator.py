@@ -55,14 +55,23 @@ class SpamhamDetector:
             raise (e, sys)
 
 
+    # def predict(self,dataframe:DataFrame):
+    #     """
+    #     :param dataframe:
+    #     :return:
+    #     """
+    #     try:
+    #         if self.loaded_model is None:
+    #             self.loaded_model = self.load_model()
+    #         return self.loaded_model.predict(dataframe)
+    #     except Exception as e:
+    #         raise SpamhamException(e,sys)
     def predict(self,dataframe:DataFrame):
-        """
-        :param dataframe:
-        :return:
-        """
         try:
             if self.loaded_model is None:
                 self.loaded_model = self.load_model()
+                if self.loaded_model is None:
+                    raise SpamhamException(f"Model not loaded from S3: {self.model_path}", sys)
             return self.loaded_model.predict(dataframe)
         except Exception as e:
-            raise SpamhamException(e,sys)
+            raise SpamhamException(e, sys)

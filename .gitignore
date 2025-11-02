@@ -147,3 +147,6 @@ Data
 *.code-workspace
 Data
 
+.env
+Dockerfile
+artifact

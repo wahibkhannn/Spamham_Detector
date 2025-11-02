@@ -22,9 +22,6 @@ class DataIngestion:
         self.utils = MainUtils()
 
 
-
-
-    
     
     def split_data_as_train_test(self,dataframe: DataFrame) -> Tuple[DataFrame, DataFrame]:
         """
@@ -127,3 +124,13 @@ class DataIngestion:
 
         except Exception as e:
             raise SpamhamException(e, sys) from e
+
+if __name__ == "__main__":
+    from src.entity.config_entity import DataIngestionConfig
+
+    data_ingestion = DataIngestion(DataIngestionConfig())
+    data_ingestion_artifact = data_ingestion.initiate_data_ingestion()
+
+    print("✅ Data Ingestion Completed Successfully!")
+    print(f"Training file path: {data_ingestion_artifact.trained_file_path}")
+    print(f"Testing file path: {data_ingestion_artifact.test_file_path}")

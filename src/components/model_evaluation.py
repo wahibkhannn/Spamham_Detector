@@ -67,22 +67,50 @@ class ModelEvaluation:
             test_df = pd.read_csv(self.data_ingestion_artifact.test_file_path)
             # x_test = pd.read_csv(self.data_ingestion_artifact.test_file_path)
             
-            x_test, y_test = test_df[FEATURE_COLUMN],test_df[[TARGET_COLUMN]]
+            # x_test, y_test = test_df[FEATURE_COLUMN],test_df[[TARGET_COLUMN]]
+            x_test, y_test = test_df[FEATURE_COLUMN],test_df[TARGET_COLUMN].values.ravel()
+            
+
            
 
           
-            trained_model = self.utils.load_object(file_path=self.model_trainer_artifact.trained_model_file_path)
+            # trained_model = self.utils.load_object(file_path=self.model_trainer_artifact.trained_model_file_path)
             # y.replace(TargetValueMapping().to_dict(), inplace=True)
-            y_hat_trained_model = trained_model.predict(x_test)
+            # y_hat_trained_model = trained_model.predict(x_test)
+
+            trained_model = self.utils.load_object(file_path=self.model_trainer_artifact.trained_model_file_path)
+            vectorizer = self.utils.load_object(file_path=self.data_transformation_artifact.transformed_vectorizer_object_file_path)
+
+            X_test_transformed = vectorizer.transform(x_test)
+            from sklearn.naive_bayes import GaussianNB
+            if isinstance(trained_model.trained_model_object, GaussianNB):
+                X_test_transformed = X_test_transformed.toarray()
+            y_hat_trained_model = trained_model.trained_model_object.predict(X_test_transformed)
+
 
             trained_model_f1_score = f1_score(y_test, y_hat_trained_model)
             best_model_f1_score = None
             best_model_metric_artifact = None
             best_model = self.get_best_model()
+            # if best_model is not None:
+            #     y_hat_best_model = best_model.predict(x_test)
+            #     best_model_f1_score = f1_score(y_test, y_hat_best_model)
+            #     best_model_metric_artifact = calculate_metric(best_model, x_test, y_test)
+
+            # best_model = self.get_best_model()
+
             if best_model is not None:
-                y_hat_best_model = best_model.predict(x_test)
+                X_test_best = vectorizer.transform(x_test)
+                from sklearn.naive_bayes import GaussianNB
+                if hasattr(best_model, 'model') and isinstance(best_model.model, GaussianNB):
+                    X_test_best = X_test_best.toarray()
+                elif hasattr(best_model, '_model') and isinstance(best_model._model, GaussianNB):
+                    X_test_best = X_test_best.toarray()
+                y_hat_best_model = best_model.predict(X_test_best)
                 best_model_f1_score = f1_score(y_test, y_hat_best_model)
                 best_model_metric_artifact = calculate_metric(best_model, x_test, y_test)
+
+
             # calucate how much percentage training model accuracy is increased/decreased
             tmp_best_model_score = 0 if best_model_f1_score is None else best_model_f1_score
             result = EvaluateModelResponse(trained_model_f1_score=trained_model_f1_score,

@@ -1,55 +1,117 @@
+# grid_search:
+#   class: GridSearchCV
+#   module: sklearn.model_selection
+#   params:
+#     cv: 3
+#     verbose: 2
+    
+# model_selection:
+#   module_0:
+#     class: MultinomialNB
+#     module: sklearn.naive_bayes
+#     params:
+#       alpha: 
+#       - 0.01
+#       - 0.03
+#       - 0.209010
+#       - 0.10
+#     search_param_grid:
+#       alpha: 
+#       - 0.01
+#       - 0.03
+#       - 0.209010
+#       - 0.10
+#   module_1:
+#     class: GaussianNB
+#     module: sklearn.naive_bayes
+#     params:
+#       var_smoothing: 
+#       - 0.006096
+#       - 0.059096
+#       # - 0.000464
+#       - 
+#     search_param_grid:
+#       var_smoothing:
+#       - 0.006096
+#       - 0.059096
+#       # - 0.000464
+
+#   module_2:
+#     class: SVC
+#     module: sklearn.svm
+#     params:
+#       kernel: 
+#       - linear
+#       C:  
+#       - 1.22
+#       - 1.6
+      
+      
+#     search_param_grid:
+#       kernel:
+#       - linear
+#       C: 
+#       - 1.22
+#       - 1.6
+      
+
 grid_search:
   class: GridSearchCV
   module: sklearn.model_selection
   params:
-    cv: 5
+    cv: 3
     verbose: 2
+    
 model_selection:
   module_0:
     class: MultinomialNB
     module: sklearn.naive_bayes
     params:
-      alpha: 
-      - 0.01
-      - 0.03
-      - 0.05
-      - 0.10
+      alpha: 0.1  # Single default value
     search_param_grid:
-      alpha: 
+      alpha:  # List for grid search
       - 0.01
-      - 0.03
-      - 0.05
-      - 0.10
-  module_1:
-    class: GaussianNB
-    module: sklearn.naive_bayes
-    params:
-      var_smoothing: 
-      - 0.006096
-      - 0.059096
-      - 0.000464
-      - 
-    search_param_grid:
-      var_smoothing:
-      - 0.006096
-      - 0.059096
-      - 0.000464
+      - 0.1
+      - 0.5
+      - 1.0
+  
+  # module_1:  # GaussianNB doesn't support sparse matrices - use MultinomialNB instead for text
+  #   class: GaussianNB
+  #   module: sklearn.naive_bayes
+  #   params:
+  #     var_smoothing: 1e-09  # Single default value
+  #   search_param_grid:
+  #     var_smoothing:
+  #     - 0.006096
+  #     - 0.059096
+  #     - 1e-09
 
   module_2:
     class: SVC
     module: sklearn.svm
     params:
+      kernel: linear  # Single default value
+      C: 1.0  # Single default value
+    search_param_grid:
+      kernel:
+      - linear
       C: 
-      - 500
-      - 600
-      - 700
-      - 800
-      
+      - 1.0
+      - 1.22
+      - 1.6
+
+  module_3:
+    class: LogisticRegression
+    module: sklearn.linear_model
+    params:
+      C: 1.0  # Single default value
+      max_iter: 1000  # Single integer, NOT a list
+      solver: liblinear  # Single default value
     search_param_grid:
       C:
-      - 500
-      - 600
-      - 700
-      - 800
-
-      
+      - 0.1
+      - 1.0
+      - 10.0
+      solver:
+      - liblinear
+      - saga

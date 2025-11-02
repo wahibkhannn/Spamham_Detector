@@ -1,144 +1,260 @@
+# import json
+# import sys
+# from typing import Tuple, Union
+# import pandas as pd
+# # from evidently.model_profile import Profile
+# # from evidently.model_profile.sections import DataDriftProfileSection
+# # from pandas import DataFrame
+
+# from evidently.report import Report
+# from evidently.metric_preset import DataDriftPreset
+
+
+# from src.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact
+# from src.entity.config_entity import DataValidationConfig
+
+# from src.exception import SpamhamException
+# from src.logger import logging
+# from src.utils.main_utils import MainUtils, write_yaml_file
+
+
+# class DataValidation:
+#     def __init__(self, 
+#                  data_ingestion_artifact: DataIngestionArtifact, 
+#                  data_validation_config: DataValidationConfig ):
+        
+#         self.data_ingestion_artifact = data_ingestion_artifact
+#         self.data_validation_config = data_validation_config
+        
+#         self.utils = MainUtils()
+
+#         self._schema_config = self.utils.read_schema_config_file()
+
+#     def validate_schema_columns(self, dataframe: DataFrame) -> bool:
+#         """
+#         Method Name :   validate_schema_columns
+#         Description :   This method validates the schema columns for the particular dataframe 
+        
+#         Output      :   True or False value is returned based on the schema 
+#         On Failure  :   Write an exception log and then raise an exception
+        
+#         Version     :   1.2
+#         Revisions   :   moved setup to cloud
+#         """
+#         try:
+            
+#             status = len(dataframe.columns) == len(self._schema_config["columns"])
+#             logging.info("Is required column present[{status}]")
+
+#             return status
+
+#         except Exception as e:
+#             raise SpamhamException(e, sys) from e
+
+   
+
+#     def validate_dataset_schema_columns(self, train_set, test_set) -> Tuple[bool, bool]:
+#         """
+#         Method Name :   validate_dataset_schema_columns
+#         Description :   This method validates the schema for schema columns for both train and test set 
+        
+#         Output      :   True or False value is returned based on the schema 
+#         On Failure  :   Write an exception log and then raise an exception
+        
+#         Version     :   1.2
+#         Revisions   :   moved setup to cloud
+#         """
+#         logging.info(
+#             "Entered validate_dataset_schema_columns method of Data_Validation class"
+#         )
+
+#         try:
+#             logging.info("Validating dataset schema columns")
+
+#             train_schema_status = self.validate_schema_columns(train_set)
+
+#             logging.info("Validated dataset schema columns on the train set")
+
+#             test_schema_status = self.validate_schema_columns(test_set)
+
+#             logging.info("Validated dataset schema columns on the test set")
+
+#             logging.info("Validated dataset schema columns")
+
+#             return train_schema_status, test_schema_status
+
+#         except Exception as e:
+#             raise SpamhamException(e, sys) from e
+
+    
+
+    
+        
+        
+#     @staticmethod
+#     def read_data(file_path) -> DataFrame:
+#         try:
+#             return pd.read_csv(file_path)
+#         except Exception as e:
+#             raise SpamhamException(e, sys)
+
+#     def initiate_data_validation(self) -> DataValidationArtifact:
+#         """
+#         Method Name :   initiate_data_validation
+#         Description :   This method initiates the data validation component for the pipeline
+        
+#         Output      :   Returns bool value based on validation results
+#         On Failure  :   Write an exception log and then raise an exception
+        
+#         Version     :   1.2
+#         Revisions   :   moved setup to cloud
+#         """
+#         logging.info("Entered initiate_data_validation method of Data_Validation class")
+
+#         try:
+#             logging.info("Initiated data validation for the dataset")
+
+#             train_df, test_df = (DataValidation.read_data(file_path = self.data_ingestion_artifact.trained_file_path),
+#                                 DataValidation.read_data(file_path = self.data_ingestion_artifact.test_file_path))
+            
+            
+            
+
+#             (
+#                 schema_train_col_status,
+#                 schema_test_col_status,
+#             ) = self.validate_dataset_schema_columns(train_set=train_df, test_set=test_df)
+
+#             logging.info(
+#                 f"Schema train cols status is {schema_train_col_status} and schema test cols status is {schema_test_col_status}"
+#             )
+
+#             logging.info("Validated dataset schema columns")
+
+
+#             if (
+#                 schema_train_col_status is True
+#                 and schema_test_col_status is True
+            
+#             ):
+#                 logging.info("Dataset schema validation completed")
+
+#                 validation_status = True
+#             else:
+#                 validation_status = False
+            
+#             data_validation_artifact = DataValidationArtifact(
+#                 validation_status=validation_status,
+#                 valid_train_file_path=self.data_ingestion_artifact.trained_file_path,
+#                 valid_test_file_path=self.data_ingestion_artifact.test_file_path,
+#                 invalid_train_file_path=self.data_validation_config.invalid_train_file_path,
+#                 invalid_test_file_path=self.data_validation_config.invalid_test_file_path,
+#                 drift_report_file_path=self.data_validation_config.drift_report_file_path
+#             )
+
+#             return data_validation_artifact
+#         except Exception as e:
+#             raise SpamhamException(e, sys) from e
 import json
 import sys
-from typing import Tuple, Union
+from typing import Tuple
 import pandas as pd
-from evidently.model_profile import Profile
-from evidently.model_profile.sections import DataDriftProfileSection
-from pandas import DataFrame
+from evidently.report import Report
+from evidently.metric_preset import DataDriftPreset
 
 from src.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact
 from src.entity.config_entity import DataValidationConfig
-
 from src.exception import SpamhamException
 from src.logger import logging
 from src.utils.main_utils import MainUtils, write_yaml_file
 
+import os
 
 class DataValidation:
     def __init__(self, 
                  data_ingestion_artifact: DataIngestionArtifact, 
-                 data_validation_config: DataValidationConfig ):
+                 data_validation_config: DataValidationConfig):
         
         self.data_ingestion_artifact = data_ingestion_artifact
         self.data_validation_config = data_validation_config
-        
         self.utils = MainUtils()
-
         self._schema_config = self.utils.read_schema_config_file()
 
-    def validate_schema_columns(self, dataframe: DataFrame) -> bool:
+    def validate_schema_columns(self, dataframe: pd.DataFrame) -> bool:
         """
-        Method Name :   validate_schema_columns
-        Description :   This method validates the schema columns for the particular dataframe 
-        
-        Output      :   True or False value is returned based on the schema 
-        On Failure  :   Write an exception log and then raise an exception
-        
-        Version     :   1.2
-        Revisions   :   moved setup to cloud
+        Validate schema columns in the given dataframe.
         """
         try:
-            
             status = len(dataframe.columns) == len(self._schema_config["columns"])
-            logging.info("Is required column present[{status}]")
-
+            logging.info(f"Is required column present: {status}")
             return status
-
         except Exception as e:
             raise SpamhamException(e, sys) from e
-
-   
 
     def validate_dataset_schema_columns(self, train_set, test_set) -> Tuple[bool, bool]:
         """
-        Method Name :   validate_dataset_schema_columns
-        Description :   This method validates the schema for schema columns for both train and test set 
-        
-        Output      :   True or False value is returned based on the schema 
-        On Failure  :   Write an exception log and then raise an exception
-        
-        Version     :   1.2
-        Revisions   :   moved setup to cloud
+        Validate schema columns for both train and test sets.
         """
-        logging.info(
-            "Entered validate_dataset_schema_columns method of Data_Validation class"
-        )
-
+        logging.info("Entered validate_dataset_schema_columns method of DataValidation class")
         try:
-            logging.info("Validating dataset schema columns")
-
-            train_schema_status = self.validate_schema_columns(train_set)
-
-            logging.info("Validated dataset schema columns on the train set")
-
-            test_schema_status = self.validate_schema_columns(test_set)
-
-            logging.info("Validated dataset schema columns on the test set")
-
-            logging.info("Validated dataset schema columns")
-
-            return train_schema_status, test_schema_status
-
+            train_status = self.validate_schema_columns(train_set)
+            test_status = self.validate_schema_columns(test_set)
+            logging.info("Validated schema columns for both train and test datasets")
+            return train_status, test_status
         except Exception as e:
             raise SpamhamException(e, sys) from e
 
-    
-
-    
-        
-        
     @staticmethod
-    def read_data(file_path) -> DataFrame:
+    def read_data(file_path) -> pd.DataFrame:
         try:
             return pd.read_csv(file_path)
         except Exception as e:
             raise SpamhamException(e, sys)
 
+    def generate_data_drift_report(self, train_df, test_df, report_path: str):
+        """
+        Generate and save Evidently Data Drift report.
+        """
+        try:
+            logging.info("Generating data drift report using Evidently...")
+            os.makedirs(os.path.dirname(report_path), exist_ok=True)
+            
+            report = Report(metrics=[DataDriftPreset()])
+            report.run(reference_data=train_df, current_data=test_df)
+
+            # Save JSON report
+            report_json = report.json()
+            with open(report_path, "w") as f:
+                f.write(report_json)
+
+            logging.info(f"Data drift report saved at: {report_path}")
+
+        except Exception as e:
+            raise SpamhamException(e, sys)
+
     def initiate_data_validation(self) -> DataValidationArtifact:
         """
-        Method Name :   initiate_data_validation
-        Description :   This method initiates the data validation component for the pipeline
-        
-        Output      :   Returns bool value based on validation results
-        On Failure  :   Write an exception log and then raise an exception
-        
-        Version     :   1.2
-        Revisions   :   moved setup to cloud
+        Initiate the data validation process.
         """
-        logging.info("Entered initiate_data_validation method of Data_Validation class")
+        logging.info("Entered initiate_data_validation method of DataValidation class")
 
         try:
-            logging.info("Initiated data validation for the dataset")
+            train_df = self.read_data(self.data_ingestion_artifact.trained_file_path)
+            test_df = self.read_data(self.data_ingestion_artifact.test_file_path)
 
-            train_df, test_df = (DataValidation.read_data(file_path = self.data_ingestion_artifact.trained_file_path),
-                                DataValidation.read_data(file_path = self.data_ingestion_artifact.test_file_path))
-            
-            
-            
+            schema_train_status, schema_test_status = self.validate_dataset_schema_columns(train_df, test_df)
+            logging.info(f"Schema train status: {schema_train_status}, test status: {schema_test_status}")
 
-            (
-                schema_train_col_status,
-                schema_test_col_status,
-            ) = self.validate_dataset_schema_columns(train_set=train_df, test_set=test_df)
+            validation_status = schema_train_status and schema_test_status
 
-            logging.info(
-                f"Schema train cols status is {schema_train_col_status} and schema test cols status is {schema_test_col_status}"
-            )
+            # ✅ Generate Evidently drift report
+            if validation_status:
+                self.generate_data_drift_report(
+                    train_df=train_df,
+                    test_df=test_df,
+                    report_path=self.data_validation_config.drift_report_file_path
+                )
 
-            logging.info("Validated dataset schema columns")
-
-
-            if (
-                schema_train_col_status is True
-                and schema_test_col_status is True
-            
-            ):
-                logging.info("Dataset schema validation completed")
-
-                validation_status = True
-            else:
-                validation_status = False
-            
             data_validation_artifact = DataValidationArtifact(
                 validation_status=validation_status,
                 valid_train_file_path=self.data_ingestion_artifact.trained_file_path,
@@ -148,6 +264,8 @@ class DataValidation:
                 drift_report_file_path=self.data_validation_config.drift_report_file_path
             )
 
+            logging.info("Data validation completed successfully.")
             return data_validation_artifact
+
         except Exception as e:
             raise SpamhamException(e, sys) from e

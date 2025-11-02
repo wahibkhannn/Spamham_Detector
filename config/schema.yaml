@@ -1,3 +1,3 @@
 columns:
-  - message: Object
-  - class: Object
+  - Message: Object
+  - label: Object

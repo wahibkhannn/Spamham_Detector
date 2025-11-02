@@ -94,10 +94,15 @@ class SimpleStorageService:
             bucket = self.get_bucket(bucket_name)
 
             file_objects = [file_object for file_object in bucket.objects.filter(Prefix=filename)]
+            # func = lambda x: x[0] if len(x) == 1 else x
+            # file_objs = func(file_objects)
+            if len(file_objects) == 0:
+             raise SpamhamException(f"No file found in bucket '{bucket_name}' with prefix '{filename}'", sys)
+            # Always pick the first match
+            file_obj = file_objects[0]
+            return file_obj
 
-            func = lambda x: x[0] if len(x) == 1 else x
 
-            file_objs = func(file_objects)
             logging.info("Exited the get_file_object method of S3Operations class")
 
             return file_objs
@@ -252,12 +257,12 @@ class SimpleStorageService:
         Version     :   1.2
         Revisions   :   moved setup to cloud
         """
-        logging.info("Entered the read_csv method of S3Operations class")
+        logging.info("Entered the read_csv method of S3 Operations class")
 
         try:
             csv_obj = self.get_file_object(filename, bucket_name)
             df = self.get_df_from_object(csv_obj)
-            logging.info("Exited the read_csv method of S3Operations class")
+            logging.info("Exited the read_csv method of S3 Operations class")
             return df
         except Exception as e:
             raise SpamhamException(e, sys) from e

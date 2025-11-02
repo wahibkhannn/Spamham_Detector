@@ -11,17 +11,23 @@ import re
 #nltk modules
 import nltk
 from typing import List, Union 
-nltk.download('stopwords')
+# nltk.download('stopwords')
 
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
+
+#my own
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import wordnet
+# nltk.download(['stopwords', 'wordnet', 'omw-1.4'])
+
 
 #sklearn modules
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, PowerTransformer
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.preprocessing import OrdinalEncoder
 
 from src.entity.config_entity import DataTransformationConfig
@@ -51,8 +57,7 @@ class DataTransformation:
 
         self.imputer_config = SimpleImputerConfig()
 
-        self.utils = MainUtils()
-        
+        self.utils = MainUtils()   
         
         
     
@@ -63,70 +68,125 @@ class DataTransformation:
         except Exception as e:
             raise SpamhamException(e,sys)
         
-        
-    
-
 
     
 
-    def get_stemmed_data(self, data: DataFrame, stemmer = PorterStemmer()) -> List:
+    # def get_stemmed_data(self, data: DataFrame, stemmer = PorterStemmer()) -> List:
         
-        try:
-            corpus = []
+    #     try:
+    #         corpus = []
             
-            for index in range(0, len(data)):
-                words = re.sub('[^a-zA-Z]', ' ', data[FEATURE_COLUMN][index])
-                words = words.lower()
-                words = words.split()
+    #         for index in range(0, len(data)):
+    #             words = re.sub('[^a-zA-Z]', ' ', data[FEATURE_COLUMN][index])
+    #             words = words.lower()
+    #             words = words.split()
                 
-                words = [stemmer.stem(word) for word in words if not word in stopwords.words('english')]
-                words = ' '.join(words)
-                corpus.append(words)
+    #             words = [stemmer.stem(word) for word in words if not word in stopwords.words('english')]
+    #             words = ' '.join(words)
+    #             corpus.append(words)
                 
-            return corpus
+    #         return corpus
         
-        except Exception as e:
-            raise SpamhamException(e, sys)
-            
-        
-    def get_vectorized_data(self, train_df:DataFrame, test_df:DataFrame, vectorizer = CountVectorizer()) -> Union[np.ndarray, np.ndarray, object]:
-        
-        try:
-            train_data = self.get_stemmed_data(train_df)
-            test_data = self.get_stemmed_data(test_df)
-            
-            logging.info(f"Applying vectorizer object on training dataframe and testing dataframe")
+    #     except Exception as e:
+    #         raise SpamhamException(e, sys)
 
-            vectorized_x_train = vectorizer.fit_transform(train_data)
-            vectorized_x_test = vectorizer.transform(test_data)
+    def get_lemmatized_data(self, data: pd.DataFrame, lemmatizer=None) -> List[str]:
+
+        if lemmatizer is None:
+            lemmatizer = WordNetLemmatizer()
+    
+        stop_words = set(stopwords.words('english'))
+        corpus = []
+
+        for text in data[FEATURE_COLUMN]:
+            text = str(text)
+            text = text.lower()
+            text = re.sub(r'\n', ' ', text)
+            text = re.sub(r'\d+', '', text)
+            text = re.sub(r'[^\w\s$!]', '', text)
+            words = text.split()
+            words = [w for w in words if w not in stop_words]
+            words = [lemmatizer.lemmatize(w) for w in words]
+            corpus.append(" ".join(words))
+        
+        return corpus
+
+
+
+
+    # def get_vectorized_data(self, train_df:DataFrame, test_df:DataFrame, vectorizer = CountVectorizer()) -> Union[np.ndarray, np.ndarray, object]:
+        
+    #     try:
+    #         train_data = self.get_stemmed_data(train_df)
+    #         test_data = self.get_stemmed_data(test_df)
             
-            logging.info("x_train and x_test have been vectorized.")
+    #         logging.info(f"Applying vectorizer object on training dataframe and testing dataframe")
+
+    #         vectorized_x_train = vectorizer.fit_transform(train_data)
+    #         vectorized_x_test = vectorizer.transform(test_data)
             
-            x_train = vectorized_x_train.toarray()
-            x_test = vectorized_x_test.toarray()
+    #         logging.info("x_train and x_test have been vectorized.")
+            
+    #         x_train = vectorized_x_train.toarray()
+    #         x_test = vectorized_x_test.toarray()
             
             
+    #         return x_train, x_test, vectorizer
+        
+    #     except Exception as e:
+    #         raise SpamhamException(e, sys)
+    
+
+    def get_vectorized_data(self, train_df, test_df, vectorizer=None):
+
+        try:
+            if vectorizer is None:
+                    vectorizer = TfidfVectorizer(
+                        ngram_range=(1,2),
+                        min_df=5,
+                        max_df=0.9,
+                        sublinear_tf=True
+                    )
+
+            train_data = self.get_lemmatized_data(train_df)
+            test_data = self.get_lemmatized_data(test_df)
+
+            logging.info("Applying TF-IDF vectorizer on training and testing data")
+            x_train = vectorizer.fit_transform(train_data)
+            x_test = vectorizer.transform(test_data)
+                
             return x_train, x_test, vectorizer
         
         except Exception as e:
             raise SpamhamException(e, sys)
+
+
+
+
         
+    # def get_encoded_target_column(self, train_df:DataFrame, test_df:DataFrame, encoder = OrdinalEncoder()) -> Union[np.ndarray, np.ndarray, object]:
         
-    def get_encoded_target_column(self, train_df:DataFrame, test_df:DataFrame, encoder = OrdinalEncoder()) -> Union[np.ndarray, np.ndarray, object]:
-        
-        try:
-            y_train = train_df[[TARGET_COLUMN]]
-            y_test = test_df[[TARGET_COLUMN]]
+    #     try:
+    #         y_train = train_df[[TARGET_COLUMN]]
+    #         y_test = test_df[[TARGET_COLUMN]]
             
-            encoded_y_train = encoder.fit_transform(y_train)
-            encoded_y_test =  encoder.transform(y_test)
+    #         encoded_y_train = encoder.fit_transform(y_train)
+    #         encoded_y_test =  encoder.transform(y_test)
             
-            logging.info("target columns has been encoded.")
+    #         logging.info("target columns has been encoded.")
             
-            return encoded_y_train, encoded_y_test, encoder
+    #         return encoded_y_train, encoded_y_test, encoder
         
-        except Exception as e:
-            raise SpamhamException(e, sys)
+    #     except Exception as e:
+    #         raise SpamhamException(e, sys)
+        
+
+    def get_encoded_target_column(self, train_df, test_df):
+
+        y_train = train_df[TARGET_COLUMN].values
+        y_test = test_df[TARGET_COLUMN].values
+        return y_train, y_test
+
         
         
         
@@ -134,7 +194,7 @@ class DataTransformation:
     def initiate_data_transformation(self)->DataTransformationArtifact:
         try:
             if self.data_validation_artifact.validation_status:
-              
+            #Checks that your data validation stage passed successfully before continuing.
                 
                 train_df = DataTransformation.read_data(file_path=self.data_ingestion_artifact.trained_file_path)
                 test_df = DataTransformation.read_data(file_path=self.data_ingestion_artifact.test_file_path)
@@ -142,7 +202,7 @@ class DataTransformation:
               
                 
                 X_train, X_test, vectorizer = self.get_vectorized_data(train_df=train_df, test_df=test_df)
-                y_train, y_test, encoder = self.get_encoded_target_column(train_df=train_df, test_df=test_df)
+                y_train, y_test = self.get_encoded_target_column(train_df=train_df, test_df=test_df)
                 
                 
                 #creating preprocessing obj directory
@@ -150,9 +210,9 @@ class DataTransformation:
                 os.makedirs(preprocessor_obj_dir, exist_ok=True)
                 
                 #dump encoder output
-                encoder_file_path = self.data_transformation_config.transformed_encoder_object_file_path
-                self.utils.save_object(file_path=encoder_file_path,obj=encoder)
-                logging.info("Encoder object saved to: %s" % encoder_file_path)
+                # encoder_file_path = self.data_transformation_config.transformed_encoder_object_file_path
+                # self.utils.save_object(file_path=encoder_file_path,obj=encoder)
+                # logging.info("Encoder object saved to: %s" % encoder_file_path)
                 
                 #dump vectorizer object
                 vectorizer_file_path = self.data_transformation_config.transformed_vectorizer_object_file_path
@@ -162,15 +222,28 @@ class DataTransformation:
                 
 
                 #concatinating input features and targets
-                train_arr = np.c_[X_train, np.array(y_train)]
+                # train_arr = np.c_[X_train, np.array(y_train)]
 
-                test_arr = np.c_[X_test, np.array(y_test)]
-                                
+                # test_arr = np.c_[X_test, np.array(y_test)]
 
-                logging.info(f"Saving transformed training and testing array.")
+                # train_arr = np.hstack((X_train, np.array(y_train).reshape(-1,1)))
+                # test_arr = np.hstack((X_test, np.array(y_test).reshape(-1,1)))
+
+
+                ## My doing - new change - modification
+                from scipy import sparse
+                os.makedirs(os.path.dirname(self.data_transformation_config.transformed_train_file_path), exist_ok=True)
+                # Save sparse X and dense y separately
+                self.utils.save_object(file_path=self.data_transformation_config.transformed_train_file_path, obj=(X_train, y_train))
+                self.utils.save_object(file_path=self.data_transformation_config.transformed_test_file_path, obj=(X_test, y_test))
+
+
+                logging.info(f"Saving transformed training and testing as pickle object.")
                 
-                self.utils.save_numpy_array_data(file_path=self.data_transformation_config.transformed_train_file_path,array=train_arr)
-                self.utils.save_numpy_array_data(file_path=self.data_transformation_config.transformed_test_file_path,array=test_arr)
+                # self.utils.save_numpy_array_data(file_path=self.data_transformation_config.transformed_train_file_path,array=train_arr)
+                # self.utils.save_numpy_array_data(file_path=self.data_transformation_config.transformed_test_file_path,array=test_arr)
+                X_train, y_train = self.utils.load_object(self.data_transformation_config.transformed_train_file_path)
+                X_test, y_test = self.utils.load_object(self.data_transformation_config.transformed_test_file_path)
 
                 
                 data_transformation_artifact = DataTransformationArtifact(
@@ -182,5 +255,6 @@ class DataTransformation:
                 logging.info(f"Data transformationa artifact: {data_transformation_artifact}")
 
                 return data_transformation_artifact
+            
         except Exception as e:
             raise SpamhamException(e,sys) from e

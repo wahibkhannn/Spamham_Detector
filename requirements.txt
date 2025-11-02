@@ -1,26 +1,100 @@
-boto3==1.24.84
-botocore-stubs==1.27.86
-dill==0.3.5.1
-dnspython==2.2.1
-evidently==0.1.58.dev0
-fastapi==0.78.0
-from-root==1.0.2
-httptools==0.5.0
-imblearn==0.0
-ipykernel==6.28.0
-jinja2==3.1.2
+# boto3==1.24.84
+# botocore-stubs==1.27.86
+# dill==0.3.5.1
+# dnspython==2.2.1
+# # evidently==0.1.58.dev0
+# fastapi==0.78.0
+# from-root==1.0.2
+# httptools==0.5.0
+# imblearn==0.0
+# ipykernel==6.28.0
+# jinja2==3.1.2
+# matplotlib==3.7.4
+# mypy-boto3-s3==1.24.76
+# neuro-mf==0.0.5
+# nltk==3.8.1
+# pymongo==4.2.0
+# python-dotenv==0.21.0
+# python-multipart==0.0.6
+# types-s3transfer==0.6.0.post4
+# uvicorn==0.18.3
+# watchfiles==0.17.0
+# websockets==10.3
+# wincertstore==0.2
+# xgboost==1.6.2
+# scikit-learn
+# numpy
+# pandas
+# evidently
+# -e .
+# boto3==1.24.84
+# botocore-stubs==1.27.86
+# dill==0.3.5.1
+# dnspython==2.2.1
+# fastapi==0.78.0
+# from-root==1.0.2
+# httptools==0.5.0
+# ipykernel==6.28.0
+# jinja2==3.1.2
+# matplotlib==3.7.4
+# mypy-boto3-s3==1.24.76
+# neuro-mf==0.0.5
+# nltk==3.8.1
+# pymongo==4.2.0
+# python-dotenv==0.21.0
+# python-multipart==0.0.6
+# types-s3transfer==0.6.0.post4
+# uvicorn>=0.22.0
+# watchfiles==0.17.0
+# websockets==10.4
+# wincertstore==0.2
+# xgboost==1.6.2
+# scikit-learn==1.5.2   # compatible with matplotlib/xgboost
+# numpy==1.26.4         # downgrade for compatibility
+# pandas==2.3.0
+# evidently     # stable older version
+
+
+
+# Core dependencies
+numpy==1.26.4
+pandas==2.3.0
+scikit-learn==1.5.2         # compatible with xgboost/matplotlib
 matplotlib==3.7.4
-mypy-boto3-s3==1.24.76
-neuro-mf==0.0.5
-nltk==3.8.1
-pymongo==4.2.0
-python-dotenv==0.21.0
-python-multipart==0.0.6
-types-s3transfer==0.6.0.post4
-uvicorn==0.18.3
-watchfiles==0.17.0
-websockets==10.3
-wincertstore==0.2
 xgboost==1.6.2
 
+# NLP & preprocessing
+nltk==3.8.1
+imblearn==0.0
+
+# FastAPI & web
+fastapi==0.78.0
+uvicorn>=0.22.0
+python-multipart==0.0.6
+httptools==0.6.4
+jinja2==3.1.2
+watchfiles==0.17.0
+websockets==10.4
+
+# Mongo & AWS
+pymongo==4.2.0
+python-dotenv==0.21.0
+boto3==1.24.84
+botocore-stubs==1.27.86
+mypy-boto3-s3==1.24.76
+types-s3transfer==0.6.0.post4
+
+# Misc / utilities
+dill==0.3.5.1
+dnspython==2.2.1
+wincertstore==0.2
+from-root==1.0.2
+neuro-mf==0.0.5
+ipykernel==6.28.0
+
+# Evidently (stable)
+evidently==0.7.0
+
+# Local project
 -e .
+

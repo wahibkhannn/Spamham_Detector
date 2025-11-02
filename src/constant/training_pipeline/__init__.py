@@ -3,8 +3,8 @@ import os
 from src.constant.s3_bucket import TRAINING_BUCKET_NAME
 
 
-TARGET_COLUMN = "class"
-FEATURE_COLUMN = "message"
+TARGET_COLUMN = "label"
+FEATURE_COLUMN = "Message"
 
 PIPELINE_NAME: str = "src"
 ARTIFACT_DIR: str = "artifact"
@@ -18,7 +18,7 @@ TRAIN_FILE_NAME: str = "train.csv"
 TEST_FILE_NAME: str = "test.csv"
 VECTORIZER_OBJECT_FILE_NAME = "vectorizer.pkl"
 ENCODER_OBJECT_FILE_NAME: str = "encoder.pkl"
-MODEL_FILE_NAME = "model.pkl"
+MODEL_FILE_NAME = "best_model.pkl"
 SCHEMA_FILE_PATH = os.path.join("config", "schema.yaml")
 
 """
@@ -28,7 +28,7 @@ DATA_INGESTION_COLLECTION_NAME: str = ""
 DATA_INGESTION_DIR_NAME: str = "data_ingestion"
 DATA_INGESTION_FEATURE_STORE_DIR: str = "feature_store"
 DATA_INGESTION_INGESTED_DIR: str = "ingested"
-DATA_INGESTION_TRAIN_TEST_SPLIT_RATIO: float = 0.2
+DATA_INGESTION_TRAIN_TEST_SPLIT_RATIO: float = 0.27
 
 """
 Data Validation realted contant start with DATA_VALIDATION VAR NAME
@@ -62,4 +62,3 @@ MODEL Evauation related constant start with MODEL_EVALUATION var name
 
 MODEL_EVALUATION_CHANGED_THRESHOLD_SCORE: float = 0.02
 MODEL_PUSHER_BUCKET_NAME = TRAINING_BUCKET_NAME
-
